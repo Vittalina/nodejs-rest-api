@@ -7,6 +7,7 @@ const {
   addContact,
   updateContact,
 } = require("../../models/contacts");
+const { contactValidation } = require("../../validation/joiValidation");
 
 const router = express.Router();
 
@@ -36,7 +37,7 @@ router.get("/:contactId", async (req, res, next) => {
   return res.status(404).json({ mesage: "Not found" });
 });
 
-router.post("/", async (req, res, next) => {
+router.post("/", contactValidation, async (req, res, next) => {
   const { name, email, phone } = req.body;
   if (name || email || phone) {
     const contact = await addContact(name, email, phone);
@@ -54,7 +55,7 @@ router.delete("/:contactId", async (req, res, next) => {
   return res.status(404).json({ mesage: "Not found" });
 });
 
-router.put("/:contactId", async (req, res, next) => {
+router.put("/:contactId", contactValidation, async (req, res, next) => {
   const { contactId } = req.params;
   if (Object.keys(req.body).length === 0) {
     return res.status(400).json({ mesage: "missing fields" });
