@@ -55,24 +55,23 @@ async function updateById(req, res, next) {
       new: true,
     }
   );
-  console.log(updatedContact);
   return res.json({ data: { contact: updatedContact } });
 }
 
 async function updateStatusById(req, res, next) {
-  const { favourite } = req.body;
+  const { favorite } = req.body;
   const { id } = req.params;
   const { _id } = req.user;
 
   const updatedStatus = await Contact.findOneAndUpdate(
     { _id: id, owner: _id },
-    favourite,
+    { favorite },
     {
       new: true,
     }
   );
   if (!updatedStatus) {
-    res.status(404).json({ message: "Not found" });
+    res.status(400).json({ message: "Not found" });
     return;
   }
   res

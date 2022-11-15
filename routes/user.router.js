@@ -5,15 +5,17 @@ const { auth } = require("../middlewares/auth");
 
 const userRouter = express.Router();
 
-userRouter.get(
-  "/contacts",
-  tryCatchWrapper(auth),
-  tryCatchWrapper(userController.getContacts)
-);
+userRouter.post("/signup", tryCatchWrapper(userController.signup));
+userRouter.post("/login", tryCatchWrapper(userController.login));
 userRouter.post(
-  "/contacts",
+  "/logout",
   tryCatchWrapper(auth),
-  tryCatchWrapper(userController.createContact)
+  tryCatchWrapper(userController.logout)
+);
+userRouter.get(
+  "/current",
+  tryCatchWrapper(auth),
+  tryCatchWrapper(userController.getCurrentUser)
 );
 
 module.exports = {

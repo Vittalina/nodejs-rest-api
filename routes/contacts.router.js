@@ -25,7 +25,7 @@ contactsRouter.put(
   tryCatchWrapper(contactsController.updateById)
 );
 contactsRouter.patch(
-  "/:id",
+  "/:id/favorite",
   contactFavoriteValidation,
   tryCatchWrapper(contactsController.updateStatusById)
 );
