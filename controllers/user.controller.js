@@ -42,7 +42,7 @@ async function login(req, res, next) {
     expiresIn: "1h",
   });
 
-  user.token = token;
+  // user.token = token;
   await User.findByIdAndUpdate(user._id, { token });
 
   return res.json({
@@ -54,8 +54,8 @@ async function login(req, res, next) {
 
 async function logout(req, res, next) {
   const { user } = req;
-  user.token = null;
-  await User.findByIdAndUpdate(user._id, user);
+
+  await User.findByIdAndUpdate(user._id, { token: null });
 
   return res.json({});
 }

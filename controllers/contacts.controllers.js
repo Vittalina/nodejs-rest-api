@@ -71,7 +71,7 @@ async function updateStatusById(req, res, next) {
     }
   );
   if (!updatedStatus) {
-    res.status(400).json({ message: "Not found" });
+    res.status(404).json({ message: "Not found" });
     return;
   }
   res
