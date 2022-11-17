@@ -2,7 +2,9 @@ const { Contact } = require("../models/contacts.model");
 const { createNotFoundHttpError } = require("../helpers");
 
 async function getAll(req, res, next) {
-  const contacts = await Contact.find();
+  const { _id } = req.user;
+
+  const contacts = await Contact.find({ owner: _id });
 
   return res.json({
     data: contacts,
@@ -11,7 +13,9 @@ async function getAll(req, res, next) {
 
 async function getOneById(req, res, next) {
   const { id } = req.params;
-  const contact = await Contact.findById(id);
+  const { _id } = req.user;
+
+  const contact = await Contact.findById({ _id: id, owner: _id });
   if (contact) {
     return res.json({ data: { contact } });
   }
@@ -20,17 +24,20 @@ async function getOneById(req, res, next) {
 
 async function deleteById(req, res, next) {
   const { id } = req.params;
+  const { _id } = req.user;
 
-  const contact = await Contact.findById(id);
+  const contact = await Contact.findOneAndDelete({ _id: id, owner: _id });
   if (contact) {
-    await Contact.findByIdAndDelete(id);
     return res.json({ data: { contact } });
   }
   return next(createNotFoundHttpError());
 }
 
 async function create(req, res, next) {
-  const createdContact = await Contact.create(req.body);
+  const { _id } = req.user;
+  // const { name, email, phone } = req.body;
+
+  const createdContact = await Contact.create({ owner: _id, ...req.body });
   return res.status(201).json({
     data: {
       contact: createdContact,
@@ -40,28 +47,29 @@ async function create(req, res, next) {
 
 async function updateById(req, res, next) {
   const { id } = req.params;
-  const updatedContact = await Contact.findByIdAndUpdate(
-    id,
+  const { _id } = req.user;
+  const updatedContact = await Contact.findOneAndUpdate(
+    { _id: id, owner: _id },
     { $set: req.body },
     {
       new: true,
     }
   );
-  console.log(updatedContact);
   return res.json({ data: { contact: updatedContact } });
 }
 
 async function updateStatusById(req, res, next) {
-  const { favourite } = req.body;
+  const { favorite } = req.body;
   const { id } = req.params;
+  const { _id } = req.user;
 
-  if (Object.keys(req.body).length === 0) {
-    return res.status(400).json({ message: "missing field favorite" });
-  }
-
-  const updatedStatus = await Contact.findByIdAndUpdate(id, favourite, {
-    new: true,
-  });
+  const updatedStatus = await Contact.findOneAndUpdate(
+    { _id: id, owner: _id },
+    { favorite },
+    {
+      new: true,
+    }
+  );
   if (!updatedStatus) {
     res.status(404).json({ message: "Not found" });
     return;
