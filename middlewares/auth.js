@@ -5,27 +5,41 @@ const { User } = require("../models/user.model");
 const { JWT_SECRET } = process.env;
 
 async function auth(req, res, next) {
-  try {
-    const authHeader = req.headers.authorization || "";
+  const authHeader = req.headers.authorization || "";
 
-    const [, token] = authHeader.split(" ");
-    if (!token) {
-      next(new Unauthorized("Not authorized"));
+  const [tokenType, token] = authHeader.split(" ");
+  if (tokenType === "Bearer" && token) {
+    try {
+      const verifiedToken = jwt.verify(token, JWT_SECRET);
+      console.log("token is valid", verifiedToken);
+
+      const user = await User.findById(verifiedToken._id);
+
+      if (!token) {
+        next(new Unauthorized("Not authorized"));
+      }
+
+      if (!user || token !== user.token) {
+        throw new Unauthorized("Not authorized");
+      }
+
+      user.token = token;
+      req.user = user;
+
+      return next();
+    } catch (error) {
+      if (error.name === "TokenExpiredError") {
+        next(new Unauthorized(error.name));
+      }
+      if (error.name === "JsonWebTokenError") {
+        next(new Unauthorized(error.name));
+      }
+
+      throw error;
     }
-    const user = jwt.decode(token, JWT_SECRET);
-    const authUser = await User.findById(user._id);
-
-    if (!authUser || token !== authUser.token) {
-      throw new Unauthorized("Not authorized");
-    }
-
-    req.token = token;
-    req.user = user;
-
-    next();
-  } catch (error) {
-    return next(new Unauthorized("No token"));
   }
+
+  return next(new Unauthorized("No token"));
 }
 
 module.exports = {
