@@ -2,6 +2,9 @@ const { User } = require("../models/user.model");
 const { Conflict, Unauthorized } = require("http-errors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const Jimp = require("jimp");
+const fs = require("fs/promises");
+const path = require("path");
 
 const { JWT_SECRET } = process.env;
 
@@ -42,7 +45,6 @@ async function login(req, res, next) {
     expiresIn: "1h",
   });
 
-  // user.token = token;
   await User.findByIdAndUpdate(user._id, { token });
 
   return res.json({
@@ -72,9 +74,37 @@ async function getCurrentUser(req, res, next) {
   return res.status(200).json({ status: "success", Userdata });
 }
 
+async function updateAvatar(req, res, next) {
+  const { user } = req;
+  // const { avatarURL } = req.body;
+  const { filename } = req.file;
+  const avatarURL = `avatars/${filename}`;
+
+  // 1 - save file in public/avatars
+  console.log(req.file);
+  const newPath = path.join(__dirname, "../public/avatars", req.file.filename);
+  await fs.rename(req.file.path, newPath);
+
+  Jimp.read(newPath, (err, avatar) => {
+    if (err) throw err;
+    avatar.resize(250, 250).quality(60).greyscale().write(newPath);
+  });
+
+  const updatedAvatar = await User.findByIdAndUpdate(
+    user._id,
+    {
+      avatarURL,
+    },
+    { new: true }
+  ).select({ avatarURL: 1, _id: 0 });
+
+  return res.status(200).json({ status: "success", updatedAvatar });
+}
+
 module.exports = {
   signup,
   login,
   logout,
   getCurrentUser,
+  updateAvatar,
 };
