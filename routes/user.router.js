@@ -8,6 +8,14 @@ const userRouter = express.Router();
 
 userRouter.post("/signup", tryCatchWrapper(userController.signup));
 userRouter.post("/login", tryCatchWrapper(userController.login));
+userRouter.get(
+  "/verify/:verificationToken",
+  tryCatchWrapper(userController.verifyEmail)
+);
+userRouter.post(
+  "/verify/",
+  tryCatchWrapper(userController.repeatedVerification)
+);
 userRouter.post(
   "/logout",
   tryCatchWrapper(auth),
