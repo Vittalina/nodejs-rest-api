@@ -21,7 +21,7 @@ async function sendRegisterEmail({ email, verificationToken }) {
     },
   });
 
-  const url = `localhost:3000/api/users/verify/${verificationToken}`;
+  const url = `http://localhost:3000/api/users/verify/${verificationToken}`;
 
   const emailBody = {
     from: "info@contactsReader.com",
@@ -70,7 +70,8 @@ async function repeatedVerification(req, res, next) {
   const { email } = req.body;
 
   const user = await User.findOne({ email });
-  const { verificationToken } = user;
+  // const { verificationToken } = user;
+  const verificationToken = uuidv4();
 
   if (!email) {
     res.status(400).json({ message: "missing required field email" });
