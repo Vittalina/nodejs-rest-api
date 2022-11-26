@@ -68,10 +68,10 @@ async function verifyEmail(req, res, next) {
 
 async function repeatedVerification(req, res, next) {
   const { email } = req.body;
-
-  const user = await User.findOne({ email });
-  // const { verificationToken } = user;
   const verificationToken = uuidv4();
+
+  const user = await User.findOneAndUpdate({ email }, { verificationToken });
+  // const { verificationToken } = user;
 
   if (!email) {
     res.status(400).json({ message: "missing required field email" });
